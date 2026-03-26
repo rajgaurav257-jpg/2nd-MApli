@@ -1,7 +1,51 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Contact.css';
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    country: '',
+    email: '',
+    message: ''
+  });
+  const [status, setStatus] = useState({ type: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setStatus({ type: '', message: '' });
+
+    // IMPORTANT: Replace this URL with your Google Apps Script Web App URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8zB4Oid3AUT-Bwtsc5ioTnsE_U2iiTTS1YJdTckwBAd2Jlw7GDhSxk-pW-WOdAVnR-w/exec";
+
+    try {
+      // We use fetch with no-cors because Apps Script redirects can trigger CORS issues in some browsers
+      // Even with no-cors, the data will still be sent to the script
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      setStatus({ type: 'success', message: 'Merci! Your message has been sent successfully. We will get back to you soon.' });
+      setFormData({ firstName: '', lastName: '', phone: '', country: '', email: '', message: '' });
+    } catch (error) {
+      console.error('Submission error:', error);
+      setStatus({ type: 'error', message: 'Oops! Something went wrong. Please try again or email us directly.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="page-container contact-page">
       <section className="page-hero" style={{
@@ -11,9 +55,9 @@ const Contact = () => {
         borderBottom: 'none'
       }}>
         <div className="container">
-          <span className="course-badge" style={{color: '#fff', borderColor: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)'}}>24/7 Support</span>
-          <h1 style={{color: '#fff', textShadow: '0 4px 20px rgba(0,0,0,0.5)'}}>Get in Touch</h1>
-          <p className="lead" style={{color: '#ddd'}}>We're here to help you navigate your language learning journey.</p>
+          <span className="course-badge" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)' }}>24/7 Support</span>
+          <h1 style={{ color: '#fff', textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>Get in Touch</h1>
+          <p className="lead" style={{ color: '#ddd' }}>We're here to help you navigate your language learning journey.</p>
         </div>
       </section>
 
@@ -22,52 +66,133 @@ const Contact = () => {
         <div className="container">
           <div className="grid grid-2">
             <div className="contact-form-side">
-              <span style={{color: 'var(--primary-red)', fontWeight: '700', letterSpacing: '0.1em', fontSize: '0.8rem', textTransform: 'uppercase'}}>Direct Contact</span>
-              <h2 style={{marginTop: '0.5rem', marginBottom: '1.5rem'}}>Send us a Message</h2>
-              <form className="contact-form premium-card" style={{padding: '4rem', background: '#fff'}}>
+              <span style={{ color: 'var(--primary-red)', fontWeight: '700', letterSpacing: '0.1em', fontSize: '0.8rem', textTransform: 'uppercase' }}>Direct Contact</span>
+              <h2 style={{ marginTop: '0.5rem', marginBottom: '1.5rem' }}>Send us a Message</h2>
+
+              <form onSubmit={handleSubmit} className="contact-form premium-card" style={{ padding: '4rem', background: '#fff' }}>
+                {status.message && (
+                  <div style={{
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    marginBottom: '2rem',
+                    fontSize: '0.9rem',
+                    textAlign: 'center',
+                    background: status.type === 'success' ? '#e6fffa' : '#fff5f5',
+                    color: status.type === 'success' ? '#2c7a7b' : '#c53030',
+                    border: `1px solid ${status.type === 'success' ? '#b2f5ea' : '#feb2b2'}`
+                  }}>
+                    {status.message}
+                  </div>
+                )}
+
                 <div className="row">
                   <div className="form-group">
-                    <label style={{fontWeight: '700', color: '#1a1a1a'}}>First Name</label>
-                    <input type="text" placeholder="Alex" style={{border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a'}} />
+                    <label style={{ fontWeight: '700', color: '#1a1a1a' }}>First Name</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      placeholder="Alex"
+                      required
+                      style={{ border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a' }}
+                    />
                   </div>
                   <div className="form-group">
-                    <label style={{fontWeight: '700', color: '#1a1a1a'}}>Last Name</label>
-                    <input type="text" placeholder="Smith" style={{border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a'}} />
+                    <label style={{ fontWeight: '700', color: '#1a1a1a' }}>Last Name</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      placeholder="Smith"
+                      required
+                      style={{ border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a' }}
+                    />
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="form-group">
+                    <label style={{ fontWeight: '700', color: '#1a1a1a' }}>Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+91 00000 00000"
+                      required
+                      style={{ border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a' }}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontWeight: '700', color: '#1a1a1a' }}>Country</label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleChange}
+                      placeholder="India"
+                      required
+                      style={{ border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a' }}
+                    />
                   </div>
                 </div>
                 <div className="form-group">
-                  <label style={{fontWeight: '700', color: '#1a1a1a'}}>Email Address</label>
-                  <input type="email" placeholder="alex@maplelingua.com" style={{border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a'}} />
+                  <label style={{ fontWeight: '700', color: '#1a1a1a' }}>Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="alex@maplelingua.com"
+                    required
+                    style={{ border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a' }}
+                  />
                 </div>
                 <div className="form-group">
-                    <label style={{fontWeight: '700', color: '#1a1a1a'}}>Message</label>
-                    <textarea rows="5" placeholder="Tell us about your learning goals..." style={{border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a'}}></textarea>
+                  <label style={{ fontWeight: '700', color: '#1a1a1a' }}>Message</label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows="5"
+                    placeholder="Tell us about your learning goals..."
+                    required
+                    style={{ border: '1px solid #eee', background: '#fcfcfc', color: '#1a1a1a' }}
+                  ></textarea>
                 </div>
-                <button type="submit" className="btn btn-red full-width" style={{padding: '1.2rem', fontSize: '1rem', fontWeight: '800'}}>Connect with an Advisor</button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn btn-red full-width"
+                  style={{ padding: '1.2rem', fontSize: '1rem', fontWeight: '800', opacity: isSubmitting ? 0.7 : 1 }}
+                >
+                  {isSubmitting ? 'Sending...' : 'Connect with an Advisor'}
+                </button>
               </form>
             </div>
-            
-            <div className="contact-info-side" style={{paddingLeft: '4rem'}}>
-              <div className="map-placeholder" style={{height: '350px', background: '#f8f9fa', borderRadius: '32px', marginBottom: '4rem', overflow: 'hidden', border: '1px solid #eee', position: 'relative'}}>
-                 <div style={{position: 'absolute', inset: 0, opacity: 0.05, background: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '24px 24px'}}></div>
-                 <div style={{display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', flexDirection: 'column'}}>
-                    <div style={{width: '60px', height: '60px', background: 'rgba(229, 90, 90, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem'}}>
-                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary-red)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                    </div>
-                    <span style={{fontWeight: '800', color: '#888', letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.75rem'}}>Global Presence Visualization</span>
-                 </div>
+
+            <div className="contact-info-side" style={{ paddingLeft: '4rem' }}>
+              <div className="map-placeholder" style={{ height: '350px', background: '#f8f9fa', borderRadius: '32px', marginBottom: '4rem', overflow: 'hidden', border: '1px solid #eee', position: 'relative' }}>
+                <div style={{ position: 'absolute', inset: 0, opacity: 0.05, background: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+                <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                  <div style={{ width: '60px', height: '60px', background: 'rgba(229, 90, 90, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary-red)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  </div>
+                  <span style={{ fontWeight: '800', color: '#888', letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.75rem' }}>Global Presence Visualization</span>
+                </div>
               </div>
 
-              <div className="info-grid" style={{display: 'grid', gridTemplateColumns: '1fr', gap: '3rem'}}>
-                 <div className="info-block">
-                    <h3 style={{fontSize: '1.5rem', marginBottom: '1rem'}}>Linguistics HQ</h3>
-                    <p style={{color: '#666', fontSize: '1.1rem', lineHeight: '1.7', maxWidth: '300px'}}>Dwarka sector 3, Delhi, India</p>
-                 </div>
-                 <div className="info-block">
-                    <h3 style={{fontSize: '1.5rem', marginBottom: '1rem'}}>Institutional Support</h3>
-                    <p style={{color: '#666', fontSize: '1.1rem', marginBottom: '0.5rem'}}>bonjour@maplelingua.com</p>
-                    <p style={{color: '#666', fontSize: '1.1rem'}}>+91 70421 13408</p>
-                 </div>
+              <div className="info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '3rem' }}>
+                <div className="info-block">
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Linguistics HQ</h3>
+                  <p style={{ color: '#666', fontSize: '1.1rem', lineHeight: '1.7', maxWidth: '300px' }}>Dwarka sector 3, Delhi, India</p>
+                </div>
+                <div className="info-block">
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Institutional Support</h3>
+                  <p style={{ color: '#666', fontSize: '1.1rem', marginBottom: '0.5rem' }}>bonjour@maplelingua.com</p>
+                  <p style={{ color: '#666', fontSize: '1.1rem' }}>+91 70421 13408</p>
+                </div>
               </div>
             </div>
           </div>
@@ -75,25 +200,25 @@ const Contact = () => {
       </section>
 
       {/* Support Tiers Section (Dark) */}
-      <section className="support-tiers" style={{padding: '8rem 0'}}>
+      <section className="support-tiers" style={{ padding: '8rem 0' }}>
         <div className="container">
-          <div className="section-header" style={{textAlign: 'center', marginBottom: '4rem'}}>
+          <div className="section-header" style={{ textAlign: 'center', marginBottom: '4rem' }}>
             <h2>Priority Support</h2>
             <p className="lead">We value your time and prioritize your inquiries.</p>
           </div>
           <div className="grid grid-3">
-             <div className="premium-card">
-                <h4 style={{color: 'var(--primary-red)'}}>Student Success</h4>
-                <p style={{marginTop: '1rem', color: 'var(--text-grey)'}}>Direct line for our current students to handle academic platform questions.</p>
-             </div>
-             <div className="premium-card">
-                <h4 style={{color: 'var(--primary-red)'}}>Admissions</h4>
-                <p style={{marginTop: '1rem', color: 'var(--text-grey)'}}>Get expert advice on choosing the right level and scheduling your classes.</p>
-             </div>
-             <div className="premium-card">
-                <h4 style={{color: 'var(--primary-red)'}}>Corporate</h4>
-                <p style={{marginTop: '1rem', color: 'var(--text-grey)'}}>Specialized assistance for company-wide French training programs.</p>
-             </div>
+            <div className="premium-card">
+              <h4 style={{ color: 'var(--primary-red)' }}>Student Success</h4>
+              <p style={{ marginTop: '1rem', color: 'var(--text-grey)' }}>Direct line for our current students to handle academic platform questions.</p>
+            </div>
+            <div className="premium-card">
+              <h4 style={{ color: 'var(--primary-red)' }}>Admissions</h4>
+              <p style={{ marginTop: '1rem', color: 'var(--text-grey)' }}>Get expert advice on choosing the right level and scheduling your classes.</p>
+            </div>
+            <div className="premium-card">
+              <h4 style={{ color: 'var(--primary-red)' }}>Corporate</h4>
+              <p style={{ marginTop: '1rem', color: 'var(--text-grey)' }}>Specialized assistance for company-wide French training programs.</p>
+            </div>
           </div>
         </div>
       </section>
