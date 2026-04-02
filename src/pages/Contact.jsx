@@ -191,7 +191,7 @@ const Contact = () => {
                 <div className="info-block">
                   <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Institutional Support</h3>
                   <p style={{ color: '#666', fontSize: '1.1rem', marginBottom: '0.5rem' }}>bonjour@maplelingua.com</p>
-                  <p style={{ color: '#666', fontSize: '1.1rem' }}>+91 70421 13408</p>
+                  <p style={{ color: '#666', fontSize: '1.1rem' }}>+1 (942) 995-5566</p>
                 </div>
               </div>
             </div>
